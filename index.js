@@ -28,6 +28,17 @@ async function run() {
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
 
+        app.post('/added-crops', async (req, res) => {
+            const newCrop = req.body;
+            const result = await allProductCollection.insertOne(newCrop);
+            res.send(result)
+        })
+
+
+        app.get("/added-crops", async (req, res) => {
+            const result = await allProductCollection.find().toArray();
+            res.send(result)
+        })
 
 
         await client.db("admin").command({ ping: 1 });
