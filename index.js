@@ -28,11 +28,18 @@ async function run() {
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
 
+        app.get("/search", async (req, res) => {
+            const search_input = req.query.search
+            const result = await allProductCollection.find({ name: { $regex: search_input, $options: "i" } }).toArray()
+            res.send(result)
+        })
+
+
         app.post('/added-crops', async (req, res) => {
             const newCrop = req.body;
             newCrop.pricePerUnit = Number(req.body.pricePerUnit)
-                newCrop.quantity = Number(req.body.quantity)
-                newCrop.createdAt = new Date();
+            newCrop.quantity = Number(req.body.quantity)
+            newCrop.createdAt = new Date();
             const result = await allProductCollection.insertOne(newCrop);
             res.send(result)
         })
