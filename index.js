@@ -30,6 +30,9 @@ async function run() {
 
         app.post('/added-crops', async (req, res) => {
             const newCrop = req.body;
+            newCrop.pricePerUnit = Number(req.body.pricePerUnit)
+                newCrop.quantity = Number(req.body.quantity)
+                newCrop.createdAt = new Date();
             const result = await allProductCollection.insertOne(newCrop);
             res.send(result)
         })
@@ -42,14 +45,22 @@ async function run() {
 
         app.get("/my-posts", async (req, res) => {
             const email = req.query.email;
-            console.log(email)
             const query = {
                 "owner.ownerEmail": email
             };
             const result = await allProductCollection.find(query).toArray();
-            console.log(result)
             res.send(result)
         })
+
+
+        app.get("/latest-posts", async (req, res) => {
+            const result = await allProductCollection.find().sort({ createdAt: -1 }).limit(6).toArray();
+
+            res.send(result)
+
+        })
+
+
 
         await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
