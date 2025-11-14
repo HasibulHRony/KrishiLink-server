@@ -27,12 +27,31 @@ async function run() {
         await client.connect();
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
+        const allUserCollection = db.collection('users')
 
         app.get("/search", async (req, res) => {
             const search_input = req.query.search
             const result = await allProductCollection.find({ name: { $regex: search_input, $options: "i" } }).toArray()
             res.send(result)
         })
+
+        app.post('/users', async (req, res) => {
+            const newUser = req.body;
+            const email = req.body.email;
+            const query = {email: email};
+
+            const existingUser = await allUserCollection.findOne(query);
+
+            if(existingUser){
+                res.send({message: 'user already exists.'})
+            }
+            else{
+                const result = await allUserCollection.insertOne(newUser)
+                res.send(result)
+            }
+
+        })
+
 
         app.get('/products-details/:id', async (req, res) => {
             const id = req.params.id;
