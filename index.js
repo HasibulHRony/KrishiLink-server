@@ -28,6 +28,7 @@ async function run() {
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
         const allUserCollection = db.collection('users')
+        // const allInterestCollection = db.collection('interests')
 
         app.get("/search", async (req, res) => {
             const search_input = req.query.search
@@ -35,17 +36,57 @@ async function run() {
             res.send(result)
         })
 
+
+        app.patch("/all_products/:id", async (req, res) => {
+            const id = req.params.id;
+            const { pricePerUnit, quantity } = req.body;
+            const result = await allProductCollection.updateOne(
+                { _id: new ObjectId(id) },
+                {
+                    $set: {
+                        pricePerUnit: pricePerUnit,
+                        quantity: quantity
+                    }
+                }
+            );
+            res.send(result);
+        });
+
+
+
+
+        app.delete('/all_products/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) }
+            const result = await allProductCollection.deleteOne(query)
+            res.send(result)
+        })
+
+        app.patch("/all_products/:id/interests", async (req, res) => {
+            const id = req.params.id;
+            const newInterest = req.body;
+            const query = { _id: new ObjectId(id) }
+            const update = {
+                $push: {
+                    interest: newInterest
+                }
+            }
+            const result = await allProductCollection.updateOne(query, update)
+            res.send(result)
+
+        })
+
         app.post('/users', async (req, res) => {
             const newUser = req.body;
             const email = req.body.email;
-            const query = {email: email};
+            const query = { email: email };
 
             const existingUser = await allUserCollection.findOne(query);
 
-            if(existingUser){
-                res.send({message: 'user already exists.'})
+            if (existingUser) {
+                res.send({ message: 'user already exists.' })
             }
-            else{
+            else {
                 const result = await allUserCollection.insertOne(newUser)
                 res.send(result)
             }
