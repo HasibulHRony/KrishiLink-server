@@ -28,7 +28,7 @@ async function run() {
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
         const allUserCollection = db.collection('users')
-        // const allInterestCollection = db.collection('interests')
+        const allInterestCollection = db.collection('users_interests')
 
         app.get("/search", async (req, res) => {
             const search_input = req.query.search
@@ -52,7 +52,22 @@ async function run() {
             res.send(result);
         });
 
+        app.post("/users_interests", async (req, res) => {
+            const newInterest = req.body;
+            newInterest.createdAt = new Date();
+            const result = await allInterestCollection.insertOne(newInterest)
+            res.send(result)
+        })
 
+        app.get("/users_interests", async (req, res) => {
+            const email = req.query.usersEmail;
+            
+            const query = {
+                usersEmail: email
+            };
+            const result = await allInterestCollection.find(query).sort({createdAt: -1}).toArray();
+            res.send(result)
+        })
 
 
         app.delete('/all_products/:id', async (req, res) => {
