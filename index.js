@@ -24,11 +24,25 @@ const client = new MongoClient(uri, {
 
 async function run() {
     try {
-        await client.connect();
+        // await client.connect();
         const db = client.db("krishi-link-db")
         const allProductCollection = db.collection('all_products')
         const allUserCollection = db.collection('users')
         const allInterestCollection = db.collection('users_interests')
+
+
+        app.get("/all_products/:id/interests", async (req, res) => {
+            const id = req.params.id
+
+            const product = await allProductCollection.findOne(
+                { _id: new ObjectId(id) },
+                { projection: { interest: 1, _id: 0 } }
+            );
+
+            const allInterests = product?.interest || [];
+            res.send(allInterests)
+
+        })
 
         app.get("/search", async (req, res) => {
             const search_input = req.query.search
@@ -61,11 +75,11 @@ async function run() {
 
         app.get("/users_interests", async (req, res) => {
             const email = req.query.usersEmail;
-            
+
             const query = {
                 usersEmail: email
             };
-            const result = await allInterestCollection.find(query).sort({createdAt: -1}).toArray();
+            const result = await allInterestCollection.find(query).sort({ createdAt: -1 }).toArray();
             res.send(result)
         })
 
@@ -150,7 +164,7 @@ async function run() {
 
 
 
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
